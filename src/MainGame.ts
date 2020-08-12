@@ -89,7 +89,7 @@ export class MainGame extends g.E {
 				y: 320 / mapColumn,
 				width: 320,
 				height: 2,
-				cssColor:"red"
+				cssColor: "red",
 			})
 		);
 
@@ -159,7 +159,7 @@ export class MainGame extends g.E {
 		});
 
 		mapBase.pointMove.add((ev) => {
-			if (px === -1 || isStop || !scene.isStart) return;
+			if (px === -1 || isStop !== 0 || !scene.isStart) return;
 			const x = Math.floor((ev.point.x + ev.startDelta.x) / (mapBase.width / mapRow));
 			if (x !== px && x >= 0 && x < mapRow) {
 				if (x < px) {
@@ -238,7 +238,7 @@ export class MainGame extends g.E {
 							labels.push(label);
 						});
 
-					isStop = true;
+					isStop++;
 					timeline
 						.create()
 						.wait(500)
@@ -249,7 +249,7 @@ export class MainGame extends g.E {
 								block.remove();
 								maps[x][j].block = null;
 							}
-							isStop = false;
+							isStop--;
 						});
 
 					score = Math.pow(i - y, 3) * 60;
@@ -269,7 +269,7 @@ export class MainGame extends g.E {
 		};
 
 		// メインループ
-		let isStop = false;
+		let isStop: number = 0; //消える処理の最中は動かせなくするためのフラグ
 		let score = 0; //加算するスコア
 		mapBase.update.add(() => {
 			if (!scene.isStart) return;
@@ -302,7 +302,7 @@ export class MainGame extends g.E {
 				return true;
 			});
 
-			if (moveBlocks.length === 0 && !isStop) {
+			if (moveBlocks.length === 0 && isStop === 0) {
 				if (score > 0) {
 					scene.addScore(score);
 					scene.playSound("se_hit");
@@ -321,6 +321,7 @@ export class MainGame extends g.E {
 
 		// 終了
 		this.finish = () => {
+			if (score > 0) scene.addScore(score);//加算されていないスコアを入れる
 			return;
 		};
 
@@ -353,6 +354,7 @@ export class MainGame extends g.E {
 			nextBlocks.length = 0;
 
 			score = 0;
+			isStop = 0;
 
 			nextBlock();
 			nextBlock();
